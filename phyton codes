@@ -1,0 +1,75 @@
+from typing import List, Optional
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+from crewai_tools import SerperDevTool
+from pydantic import BaseModel, Field
+
+
+# region Output Models
+
+class Agent_DevOpsPipelineGenerator_ProjectAnalysis(BaseModel):
+    project_summary: str = Field(..., description="Summary of the project")
+    architecture_type: str = Field(..., description="Architecture type of the project")
+    scalability_expectation: str = Field(..., description="Scalability expectation of the project")
+
+class Agent_DevOpsPipelineGenerator_PipelineStage(BaseModel):
+    stage_name: str = Field(..., description="Name of the pipeline stage (e.g. Build, Test, Deploy)")
+    description: str = Field(..., description="What happens during this pipeline stage")
+
+class Agent_DevOpsPipelineGenerator_Tool(BaseModel):
+    tool_name: str = Field(..., description="Name of DevOps tool recommended")
+    purpose: str = Field(..., description="What this tool is used for in the pipeline")
+
+class Agent_DevOpsPipelineGenerator_Pipeline(BaseModel):
+    stages: List[Agent_DevOpsPipelineGenerator_PipelineStage] = Field(..., description="Stages of CI pipeline")
+    tools: List[Agent_DevOpsPipelineGenerator_Tool] = Field(..., description="Recommended DevOps tools")
+    docker_strategy: str = Field(..., description="Docker strategy for the project")
+
+class Agent_DevOpsPipelineGenerator_Deployment(BaseModel):
+    cloud_provider: str = Field(..., description="Recommended cloud provider")
+    deployment_service: str = Field(..., description="Recommended deployment service")
+    scaling_strategy: str = Field(..., description="Scaling strategy recommendation")
+
+class DevOpsPipelineGenerator_dto(BaseModel):
+    """DevOpsPipelineGenerator model"""
+    project_analysis: Agent_DevOpsPipelineGenerator_ProjectAnalysis = Field(..., description="Project analysis")
+    pipeline: Agent_DevOpsPipelineGenerator_Pipeline = Field(..., description="CI/CD pipeline definition")
+    deployment: Agent_DevOpsPipelineGenerator_Deployment = Field(..., description="Deployment strategy")
+    monitoring_tools: List[str] = Field(..., description="Monitoring and logging tools")
+    reasoning: str = Field(..., description="Reasoning behind the recommendations")
+
+# endregion
+
+
+@CrewBase
+class DevOpsPipelineGeneratorCrew():
+    """DevOpsPipelineGenerator crew"""
+
+    agents_config = 'config/DevOpsPipelineGenerator_agents.yaml'
+    tasks_config = 'config/DevOpsPipelineGenerator_tasks.yaml'
+
+    @agent
+    def DevOpsPipelineGenerator_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['DevOpsPipelineGenerator_agent'],
+            tools=[SerperDevTool()],
+            verbose=True,
+            memory=False,
+        )
+
+    @task
+    def DevOpsPipelineGenerator_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['DevOpsPipelineGenerator_task'],
+            agent=self.DevOpsPipelineGenerator_agent(),
+            output_json=DevOpsPipelineGenerator_dto
+        )
+
+    @crew
+    def crew(self) -> Crew:
+        return Crew(
+            agents=self.agents,
+            tasks=self.tasks,
+            process=Process.sequential,
+            verbose=True,
+        )
