@@ -1,0 +1,31 @@
+DevOpsPipelineGenerator_task:
+  description: >
+    Analyze the project type: {project_type}, backend technology: {backend},
+    frontend framework: {frontend}, database system: {database},
+    and preferred cloud provider: {cloud_provider}.
+    
+    Based on these inputs, design a complete DevOps pipeline for the system.
+    
+    The pipeline should include:
+    
+    - CI/CD workflow stages (build, test, security scan, deploy)
+    - Recommended DevOps tools
+    - Containerization strategy using Docker
+    - Deployment architecture for the specified cloud provider
+    - Monitoring and logging solutions
+    - Best practices for scalability, reliability, and automation
+    
+    Explain the reasoning behind the chosen DevOps tools and deployment strategy.
+
+    General Rule: Always use the tools given to you.
+
+  expected_output: >
+    A structured JSON output containing:
+    
+    - CI/CD pipeline stages
+    - recommended DevOps tools
+    - containerization strategy (Dockerfile explanation)
+    - deployment architecture and cloud services
+    - monitoring and logging tools
+    - DevOps best practice recommendations
+    - an executive summary explaining the pipeline design.
